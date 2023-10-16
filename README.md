@@ -190,8 +190,6 @@ gating_weights = moe.gating.linear2.weight.detach().flatten()
 
 
 ```python
-import numpy as np
-import matplotlib.pyplot as plt
 
 x_line = np.linspace(min(data[:, 0]), max(data[:, 0]), 100)
 
