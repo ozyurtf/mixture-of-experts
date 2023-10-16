@@ -2,6 +2,7 @@
 
 ![png](figures/moe.png)
 
+
 ```python
 import math
 
