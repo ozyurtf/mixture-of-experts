@@ -95,7 +95,7 @@ class GatingNetwork(nn.Module):
     x = self.linear1(data)
     x = self.relu(x)
     x = self.linear2(x)
-    x = self.Softmax(x)
+    x = self.sigmoid(x)
     return x
 ```
 
