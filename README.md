@@ -88,13 +88,13 @@ class GatingNetwork(nn.Module):
     self.linear1 = nn.Linear(input_size, 4)
     self.relu = nn.ReLU()
     self.linear2 = nn.Linear(4, num_experts)
-    self.sigmoid = nn.Sigmoid()
+    self.softmax = nn.Softmax(dim=-1)
   
   def forward(self, data): 
     x = self.linear1(data)
     x = self.relu(x)
     x = self.linear2(x)
-    x = self.sigmoid(x)
+    x = self.Softmax(x)
     return x
 ```
 
