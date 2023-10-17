@@ -35,14 +35,35 @@ data, labels = generate_data()
 class_0 = data[labels == 0]
 class_1 = data[labels == 1]
 
-plt.scatter(class_0[:, 0], class_0[:, 1], label='Class 0', alpha=0.5)
-plt.scatter(class_1[:, 0], class_1[:, 1], label='Class 1', alpha=0.5)
+# Scatter plots for Class 0 and Class 1
+scatter_class_0 = go.Scatter(
+    x=class_0[:, 0],
+    y=class_0[:, 1],
+    mode='markers',
+    marker=dict(color='rgba(152, 0, 0, 0.5)'),
+    name='Class 0'
+)
 
-plt.xlabel('Feature 1')
-plt.ylabel('Feature 2')
-plt.legend()
+scatter_class_1 = go.Scatter(
+    x=class_1[:, 0],
+    y=class_1[:, 1],
+    mode='markers',
+    marker=dict(color='rgba(0, 152, 0, 0.5)'),
+    name='Class 1'
+)
 
-plt.show()
+layout = go.Layout(
+    xaxis=dict(title='Feature 1'),
+    yaxis=dict(title='Feature 2'),
+    showlegend=True,
+    autosize=True,
+    margin=dict(l=0, r=0, b=0, t=0),
+    hovermode='closest',
+    plot_bgcolor='rgba(255, 255, 255, 0.8)'
+)
+
+fig = go.Figure(data=[scatter_class_0, scatter_class_1], layout=layout)
+fig.write_image("figures/output_3_0.png", scale = 8, width=600, height=400)
 
 class Expert(nn.Module):
   def  __init__(self, input_size, output_size): 
@@ -181,8 +202,6 @@ layout = go.Layout(
     plot_bgcolor='rgba(255, 255, 255, 0.8)'
 )
 
-# Create figure
 fig = go.Figure(data=[scatter_class_0, scatter_class_1, line_expert_1, line_expert_2], layout=layout)
 
-# Show the figure
-fig.write_image("figures/moe.png", scale = 12, width=600, height=300)
+fig.write_image("figures/output_15_0.png", scale = 12, width=600, height=300)
