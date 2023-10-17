@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 
 from tqdm import tqdm
 
+import plotly.graph_objects as go
+
 # Generate the Dataset
 def generate_data(n_samples=1000):
   X = torch.zeros(n_samples, 2)
@@ -107,7 +109,7 @@ data_tensor = data.float()
 labels_tensor = labels.view(-1, 1).float()
 
 # Training loop
-num_epochs = 500 
+num_epochs = 500
 for epoch in tqdm(range(num_epochs)):
     # Forward pass
     y_hat = moe.forward(data)
@@ -130,21 +132,57 @@ gating_weights = moe.gating.linear2.weight.detach().flatten()
 
 x_line = np.linspace(min(data[:, 0]), max(data[:, 0]), 100)
 
-y_line1 = expert1_weights * x_line + expert1_bias
-y_line2 = expert2_weights * x_line + expert2_bias
+y_line1 = expert1_weights * x_line + 5
+y_line2 = expert2_weights * x_line + 5
 
 class_0 = data[labels == 0]
 class_1 = data[labels == 1]
-plt.scatter(class_0[:, 0], class_0[:, 1], label='Class 0', alpha=0.5)
-plt.scatter(class_1[:, 0], class_1[:, 1], label='Class 1', alpha=0.5)
 
-plt.plot(x_line, y_line1, label='Expert 1', alpha = 1)
-plt.plot(x_line, y_line2, label='Expert 2', alpha = 1)
+scatter_class_0 = go.Scatter(
+    x=class_0[:, 0],
+    y=class_0[:, 1],
+    mode='markers',
+    marker=dict(color='rgba(152, 0, 0, 0.5)'),
+    name='Class 0'
+)
 
-plt.xlabel('Feature 1')
-plt.ylabel('Feature 2')
-plt.grid(True, c='gray')
-plt.legend()
-plt.autoscale()
-plt.show()
+scatter_class_1 = go.Scatter(
+    x=class_1[:, 0],
+    y=class_1[:, 1],
+    mode='markers',
+    marker=dict(color='rgba(0, 152, 0, 0.5)'),
+    name='Class 1'
+)
 
+# Line plots for Expert 1 and Expert 2
+line_expert_1 = go.Scatter(
+    x=x_line,
+    y=y_line1,
+    mode='lines',
+    line=dict(color='rgba(152, 0, 0, 0.5)'),
+    name='Expert 1'
+)
+
+line_expert_2 = go.Scatter(
+    x=x_line,
+    y=y_line2,
+    mode='lines',
+    line=dict(color='rgba(0, 152, 0, 0.5)'),
+    name='Expert 2'
+)
+
+layout = go.Layout(
+    xaxis=dict(title='Feature 1'),
+    yaxis=dict(title='Feature 2'),
+    showlegend=True,
+    autosize=True,
+    margin=dict(l=0, r=0, b=0, t=0),
+    hovermode='closest',
+    plot_bgcolor='rgba(255, 255, 255, 0.8)'
+)
+
+# Create figure
+fig = go.Figure(data=[scatter_class_0, scatter_class_1, line_expert_1, line_expert_2], layout=layout)
+
+# Show the figure
+fig.write_image("figures/moe.png", scale = 12, width=600, height=300)
