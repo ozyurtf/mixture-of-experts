@@ -9,3 +9,6 @@ venv.bak/
 
 # ipynb files
 mixture-of-experts.ipynb
+
+
+.DS_Store

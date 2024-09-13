@@ -130,7 +130,7 @@ data_tensor = data.float()
 labels_tensor = labels.view(-1, 1).float()
 
 # Training loop
-num_epochs = 500
+num_epochs = 2000
 for epoch in tqdm(range(num_epochs)):
     # Forward pass
     y_hat = moe.forward(data)
@@ -153,8 +153,8 @@ gating_weights = moe.gating.linear2.weight.detach().flatten()
 
 x_line = np.linspace(min(data[:, 0]), max(data[:, 0]), 100)
 
-y_line1 = expert1_weights * x_line + 5
-y_line2 = expert2_weights * x_line + 5
+y_line1 = expert1_weights * x_line + expert1_bias
+y_line2 = expert2_weights * x_line + expert2_bias
 
 class_0 = data[labels == 0]
 class_1 = data[labels == 1]
@@ -163,7 +163,8 @@ scatter_class_0 = go.Scatter(
     x=class_0[:, 0],
     y=class_0[:, 1],
     mode='markers',
-    marker=dict(color='rgba(152, 0, 0, 0.5)'),
+    marker=dict(color='rgba(0, 152, 0, 0.5)',
+                line=dict(color='black',width=0.25)),    
     name='Class 0'
 )
 
@@ -171,7 +172,8 @@ scatter_class_1 = go.Scatter(
     x=class_1[:, 0],
     y=class_1[:, 1],
     mode='markers',
-    marker=dict(color='rgba(0, 152, 0, 0.5)'),
+    marker=dict(color='rgba(152, 0, 0, 0.5)',
+                line=dict(color='black',width=0.25)),
     name='Class 1'
 )
 
@@ -180,7 +182,7 @@ line_expert_1 = go.Scatter(
     x=x_line,
     y=y_line1,
     mode='lines',
-    line=dict(color='rgba(152, 0, 0, 0.5)'),
+    line=dict(color='#2E91E5'),
     name='Expert 1'
 )
 
@@ -188,7 +190,7 @@ line_expert_2 = go.Scatter(
     x=x_line,
     y=y_line2,
     mode='lines',
-    line=dict(color='rgba(0, 152, 0, 0.5)'),
+    line=dict(color='#2E91E5'),
     name='Expert 2'
 )
 
@@ -196,7 +198,7 @@ layout = go.Layout(
     xaxis=dict(title='Feature 1'),
     yaxis=dict(title='Feature 2'),
     showlegend=True,
-    autosize=True,
+    autosize=False,
     margin=dict(l=0, r=0, b=0, t=0),
     hovermode='closest',
     plot_bgcolor='rgba(255, 255, 255, 0.8)'
