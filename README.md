@@ -1,5 +1,3 @@
-# Mixture of Experts Model
-
 ![png](figures/moe.png)
 
 
