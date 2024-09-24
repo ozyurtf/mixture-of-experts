@@ -141,9 +141,6 @@ moe = MixtureOfExperts()
 criterion = nn.MSELoss() 
 optimizer = torch.optim.Adam(moe.parameters(),lr=0.01)
 
-# Define the learning rate scheduler
-scheduler = torch.optim.lr_scheduler.ConstantLR(optimizer) 
-
 # Convert data and labels to float tensors
 data_tensor = data.float()
 labels_tensor = labels.view(-1, 1).float()
@@ -156,9 +153,6 @@ for epoch in tqdm(range(num_epochs)):
 
     # Backward pass and optimization
     loss_value = moe.backward(y_hat, labels_tensor, criterion, optimizer)
-
-    # Decay the learning rate
-    scheduler.step()
 ```
 
     100%|███████████████████████████████████████| 500/500 [00:00<00:00, 1325.75it/s]
@@ -170,25 +164,28 @@ Finally, let's plot the decision boundaries of the two experts, the gating netwo
 
 
 ```python
-expert1_weights = moe.expert1.linear.weight.detach()[0,0]
-expert2_weights = moe.expert2.linear.weight.detach()[0,0]
+w11 = moe.expert1.linear.weight[0][0].detach()
+w12 = moe.expert1.linear.weight[0][1].detach()
 
-expert1_bias = moe.expert1.linear.bias.detach()
-expert2_bias = moe.expert2.linear.bias.detach()
+w21 = moe.expert2.linear.weight[0][0].detach()
+w22 = moe.expert2.linear.weight[0][1].detach()
 
-gating_weights = moe.gating.linear2.weight.detach().flatten()
+b1 = moe.expert1.linear.bias.detach()
+b2 = moe.expert2.linear.bias.detach()
 ```
 
 
 ```python
+x_range = np.linspace(min(data[:,0]), max(data[:,0]))
 
-x_line = np.linspace(min(data[:, 0]), max(data[:, 0]), 100)
-
-y_line1 = expert1_weights * x_line + 5
-y_line2 = expert2_weights * x_line + 5
+y_line1 = -(w11 * x_range + b1) / w12 + 2.5
+y_line2 = -(w21 * x_range + b2) / w22 + 2.5
 
 class_0 = data[labels == 0]
 class_1 = data[labels == 1]
+```
+
+```python
 plt.scatter(class_0[:, 0], class_0[:, 1], label='Class 0', alpha=0.5)
 plt.scatter(class_1[:, 0], class_1[:, 1], label='Class 1', alpha=0.5)
 

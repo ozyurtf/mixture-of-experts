@@ -8,7 +8,7 @@ env.bak/
 venv.bak/
 
 # ipynb files
-.*ipynb
+*.ipynb
 
 .ipynb_checkpoints
 
