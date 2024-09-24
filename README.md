@@ -117,12 +117,11 @@ class MixtureOfExperts(nn.Module):
     
     gating_output =  self.gating(data)
 
-    s = (expert1_output*gating_output[:,0][:,None] + 
-         expert2_output*gating_output[:,1][:,None])
+    mixed_output = gating_output[:,0] * expert1_output.squeeze() + gating_output[:,1] * expert2_output.squeeze()
     
-    a = self.sigmoid(s)
+    mixed_output_sigmoid = self.sigmoid(mixed_output)
     
-    return a
+    return mixed_output_sigmoid
 
   def backward(self, y_hat, labels, criterion, optimizer): 
     optimizer.zero_grad()
