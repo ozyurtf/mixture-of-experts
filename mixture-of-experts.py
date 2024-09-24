@@ -12,8 +12,10 @@ from tqdm import tqdm
 
 import plotly.graph_objects as go
 
+n_samples = 2000
+
 # Generate the Dataset
-def generate_data(n_samples=1000):
+def generate_data(n_samples=n_samples):
   X = torch.zeros(n_samples, 2)
   y = torch.zeros(n_samples, dtype=torch.long)
 
@@ -40,7 +42,7 @@ scatter_class_0 = go.Scatter(
     x=class_0[:, 0],
     y=class_0[:, 1],
     mode='markers',
-    marker=dict(color='rgba(152, 0, 0, 0.5)'),
+    marker=dict(color='rgba(0, 152, 0, 0.5)'),
     name='Class 0'
 )
 
@@ -48,7 +50,7 @@ scatter_class_1 = go.Scatter(
     x=class_1[:, 0],
     y=class_1[:, 1],
     mode='markers',
-    marker=dict(color='rgba(0, 152, 0, 0.5)'),
+    marker=dict(color='rgba(152, 0, 0, 0.5)'),
     name='Class 1'
 )
 
@@ -63,6 +65,7 @@ layout = go.Layout(
 )
 
 fig = go.Figure(data=[scatter_class_0, scatter_class_1], layout=layout)
+y_limits = fig.layout.yaxis.range
 fig.write_image("figures/output_3_0.png", scale = 8, width=600, height=400)
 
 class Expert(nn.Module):
@@ -103,12 +106,11 @@ class MixtureOfExperts(nn.Module):
     
     gating_output =  self.gating(data)
 
-    s = (expert1_output*gating_output[:,0][:,None] + 
-         expert2_output*gating_output[:,1][:,None])
+    mixed_output = gating_output[:,0] * expert1_output.squeeze() + gating_output[:,1] * expert2_output.squeeze()
     
-    a = self.sigmoid(s)
+    mixed_output_sigmoid = self.sigmoid(mixed_output)
     
-    return a
+    return mixed_output_sigmoid
 
   def backward(self, y_hat, labels, criterion, optimizer): 
     optimizer.zero_grad()
@@ -122,39 +124,34 @@ moe = MixtureOfExperts()
 criterion = nn.MSELoss() 
 optimizer = torch.optim.Adam(moe.parameters(),lr=0.01)
 
-# Define the learning rate scheduler
-scheduler = torch.optim.lr_scheduler.ConstantLR(optimizer) 
-
 # Convert data and labels to float tensors
 data_tensor = data.float()
-labels_tensor = labels.view(-1, 1).float()
+labels_tensor = labels.float()
 
 # Training loop
 num_epochs = 2000
 for epoch in tqdm(range(num_epochs)):
     # Forward pass
     y_hat = moe.forward(data)
-
+    
     # Backward pass and optimization
     loss_value = moe.backward(y_hat, labels_tensor, criterion, optimizer)
 
-    # Decay the learning rate
-    scheduler.step()
+print(sum(torch.round(y_hat).squeeze() == labels)/n_samples)
 
-print(sum(torch.round(y_hat).squeeze() == labels)/1000)
+w11 = moe.expert1.linear.weight[0][0].detach()
+w12 = moe.expert1.linear.weight[0][1].detach()
 
-expert1_weights = moe.expert1.linear.weight.detach()[0,0]
-expert2_weights = moe.expert2.linear.weight.detach()[0,0]
+w21 = moe.expert2.linear.weight[0][0].detach()
+w22 = moe.expert2.linear.weight[0][1].detach()
 
-expert1_bias = moe.expert1.linear.bias.detach()
-expert2_bias = moe.expert2.linear.bias.detach()
+b1 = moe.expert1.linear.bias.detach()
+b2 = moe.expert2.linear.bias.detach()
 
-gating_weights = moe.gating.linear2.weight.detach().flatten()
+x_range = np.linspace(min(data[:,0]), max(data[:,0]))
 
-x_line = np.linspace(min(data[:, 0]), max(data[:, 0]), 100)
-
-y_line1 = expert1_weights * x_line + expert1_bias
-y_line2 = expert2_weights * x_line + expert2_bias
+y_line1 = -(w11 * x_range + b1) / w12 + 2.5
+y_line2 = -(w21 * x_range + b2) / w22 + 2.5
 
 class_0 = data[labels == 0]
 class_1 = data[labels == 1]
@@ -179,7 +176,7 @@ scatter_class_1 = go.Scatter(
 
 # Line plots for Expert 1 and Expert 2
 line_expert_1 = go.Scatter(
-    x=x_line,
+    x=x_range,
     y=y_line1,
     mode='lines',
     line=dict(color='#2E91E5'),
@@ -187,7 +184,7 @@ line_expert_1 = go.Scatter(
 )
 
 line_expert_2 = go.Scatter(
-    x=x_line,
+    x=x_range,
     y=y_line2,
     mode='lines',
     line=dict(color='#2E91E5'),

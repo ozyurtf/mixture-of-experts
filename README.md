@@ -93,7 +93,7 @@ class GatingNetwork(nn.Module):
     x = self.linear1(data)
     x = self.relu(x)
     x = self.linear2(x)
-    x = self.sigmoid(x)
+    x = self.softmax(x)
     return x
 ```
 
@@ -135,7 +135,6 @@ class MixtureOfExperts(nn.Module):
 ## Training Loop
 
 
-
 ```python
 # Define the model, loss, and optimizer
 moe = MixtureOfExperts()
@@ -163,14 +162,6 @@ for epoch in tqdm(range(num_epochs)):
 ```
 
     100%|███████████████████████████████████████| 500/500 [00:00<00:00, 1325.75it/s]
-
-
-
-```python
-print(sum(torch.round(y_hat).squeeze() == labels)/1000)
-```
-
-    tensor(0.9770)
 
 
 ## Decision Boundaries
