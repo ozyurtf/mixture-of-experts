@@ -204,11 +204,3 @@ plt.show()
     
 ![png](figures/output_15_0.png)
     
-
-
-### The Effect of Increasing the Number of Experts
-
-
-```python
-
-```
