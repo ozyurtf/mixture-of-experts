@@ -1,6 +1,6 @@
 ![png](figures/moe.png)
 
-**Note**: I wrote the codes below based on my assignment in Deep Learning course at New York University. The main repository of the course can be seen in [here](https://github.com/Atcold/NYU-DLSP20).
+**Note**: I wrote the codes below based on my assignment in Deep Learning class at New York University. The main repository of the course can be seen in [here](https://github.com/Atcold/NYU-DLSP20).
 
 ```python
 import math
